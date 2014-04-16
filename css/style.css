@@ -14,6 +14,20 @@ body {
     width: 100%;
 }
 
+.center {
+    text-align: center;
+    width: 100px;
+}
+
+.button {
+    text-align: center;
+    width: 10px%;
+}
+
+#table_result td a {
+    text-decoration: none;
+}
+
 #table_result th {
     background-color: #bbbbbb;
 }
