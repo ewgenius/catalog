@@ -20,20 +20,68 @@ var CatalogApp = function() {
     this.selector = $('#product_selector');
     this.table = $('#table_result');
     this.data = null;
-    this.backet = {};
+    this.backet = {
+        items: {},
+        cell_total: $('#total'),
+        total: 0,
+        addOne: function(id) {
+            if (this.items[id].count < this.items[id].amount) {
+                this.items[id].count++;
+                this.items[id].cell_count.html(this.items[id].count);
+                this.total += this.items[id].cost;
+                this.updateCost(id);
+            }
+        },
+        removeOne: function(id) {
+            if (this.items[id].count > 0) {
+                this.items[id].count--;
+                this.items[id].cell_count.html(this.items[id].count);
+                this.total -= this.items[id].cost;
+                this.updateCost(id);
+            }
+        },
+        remove: function(id) {
+            this.total -= this.items[id].cost * this.items[id].count;
+            this.cell_total.html(this.total);
+            this.items[id].row.remove();
+            delete this.items[id];
+        },
+        updateCost: function(id) {
+            this.items[id].cell_cost.html(this.items[id].cost * this.items[id].count);
+            this.cell_total.html(this.total);
+        },
+        clear: function() {
+            for (var id in this.items) {
+                this.remove(id);
+            }
+        },
+        submit: function() {
+            // send result
+            this.clear();
+        }
+    };
 
     var self = this;
 
+    $('#submit').click(function() {
+        self.backet.submit();
+    });
+
+
     this.addItem = function(id) {
         var item = self.data[id];
-        if (self.backet[id] == undefined) {
-            self.backet[id] = item;
-            self.backet[id].count = 1;
-
+        if (self.backet.items[id] == undefined) {
             var cell_count = $('<td>').html('1');
             var cell_cost = $('<td>').html('0');
 
-            self.table.append($('<tr>')
+            self.backet.items[id] = item;
+            self.backet.items[id].count = 1;
+            self.backet.items[id].cell_count = cell_count;
+            self.backet.items[id].cell_cost = cell_cost;
+            self.backet.total += item.cost;
+            self.backet.updateCost(id);
+
+            var row = $('<tr>')
                 .attr('data-id', id)
                 .append($('<td>').html(item.name))
                 .append($('<td>').html($('<a>')
@@ -42,13 +90,7 @@ var CatalogApp = function() {
                     .click(function() {
                         var row = $(this).parent().parent();
                         var id = row.attr('data-id');
-                        if (self.backet[id].count > 0) {
-                            self.backet[id].count--;
-                            cell_count.html(self.backet[id].count);
-                        } else {
-                            delete self.backet[id];
-                            row.remove();
-                        }
+                        self.backet.removeOne(id);
                     })))
                 .append(cell_count)
                 .append($('<td>').html($('<a>')
@@ -57,10 +99,7 @@ var CatalogApp = function() {
                     .click(function() {
                         var row = $(this).parent().parent();
                         var id = row.attr('data-id');
-                        if (self.backet[id].count < self.backet[id].amount) {
-                            self.backet[id].count++;
-                            cell_count.html(self.backet[id].count);
-                        }
+                        self.backet.addOne(id);
                     })))
                 .append(cell_cost)
                 .append($('<td>').html($('<a>')
@@ -68,9 +107,11 @@ var CatalogApp = function() {
                     .attr('href', 'javascript:;')
                     .click(function() {
                         var row = $(this).parent().parent();
-                        delete self.backet[row.attr('data-id')];
-                        row.remove();
-                    }))));
+                        self.backet.remove(row.attr('data-id'));
+                    })));
+            self.backet.items[id].row = row;
+
+            $(self.table.find('tr')[0]).after(row);
         }
     }
 
@@ -85,7 +126,7 @@ var CatalogApp = function() {
             this.selector.append($('<option>')
                 .html(data[i].name));
         };
-    }
+    };
 };
 
 var app = new CatalogApp();

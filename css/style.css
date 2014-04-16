@@ -5,11 +5,12 @@ body {
 
 .container {
     width: 800px;
-    padding-top: 10px;
+    padding-top: 20px;
     margin: 0px auto;
 }
 
 #table_result {
+    margin: 20px 0px;
     width: 100%;
 }
 
